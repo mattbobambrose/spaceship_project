@@ -1,11 +1,13 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class World {
     public static void main(String[] args) throws InterruptedException {
-        final AtomicInteger level = new AtomicInteger(2);
+        final AtomicInteger level = new AtomicInteger(1);
+        final AtomicBoolean enabled = new AtomicBoolean(true);
         JFrame worldFrame = new JFrame("World");
 
         JPanel everythingPanel = new JPanel();
@@ -18,6 +20,7 @@ public class World {
         levelDown.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 label1.setText("Level: " + level.decrementAndGet());
+                enabled.set(false);
             }
         });
 
@@ -25,6 +28,7 @@ public class World {
         levelUp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 label1.setText("Level: " + level.incrementAndGet());
+                enabled.set(false);
             }
         });
         levelPanel.add(levelDown);
@@ -32,20 +36,25 @@ public class World {
         levelPanel.add(levelUp);
         everythingPanel.add(levelPanel);
 
+        everythingPanel.add(new JLabel(" "));
+        everythingPanel.add(new JLabel("Player Stats"));
+        everythingPanel.add(new JLabel(" "));
+
+
         JPanel playerStatsPanel = new JPanel();
         playerStatsPanel.setLayout(new BoxLayout(playerStatsPanel, BoxLayout.X_AXIS));
 
         JPanel playerHealthPanel = new JPanel();
         playerHealthPanel.setLayout(new BoxLayout(playerHealthPanel, BoxLayout.Y_AXIS));
-        JButton upgradeHealth = new JButton("Upgrade health");
-        playerHealthPanel.add(upgradeHealth);
+        JButton upgradeHealthButton = new JButton("Upgrade health for 4");
+        playerHealthPanel.add(upgradeHealthButton);
         JLabel pHealth = new JLabel("health");
         playerHealthPanel.add(pHealth);
         playerStatsPanel.add(playerHealthPanel);
 
         JPanel playerMinAttackPanel = new JPanel();
         playerMinAttackPanel.setLayout(new BoxLayout(playerMinAttackPanel, BoxLayout.Y_AXIS));
-        JButton upgradeMinAttackButton = new JButton("Upgrade min attack");
+        JButton upgradeMinAttackButton = new JButton("Upgrade min attack for 4");
         playerMinAttackPanel.add(upgradeMinAttackButton);
         JLabel pMinAttackLabel = new JLabel("MinAttack");
         playerMinAttackPanel.add(pMinAttackLabel);
@@ -53,7 +62,7 @@ public class World {
 
         JPanel playerMaxAttackPanel = new JPanel();
         playerMaxAttackPanel.setLayout(new BoxLayout(playerMaxAttackPanel, BoxLayout.Y_AXIS));
-        JButton upgradeMaxAttackButton = new JButton("Upgrade max attack");
+        JButton upgradeMaxAttackButton = new JButton("Upgrade max attack for 4");
         playerMaxAttackPanel.add(upgradeMaxAttackButton);
         JLabel pMaxAttackLabel = new JLabel("MaxAttack");
         playerMaxAttackPanel.add(pMaxAttackLabel);
@@ -66,8 +75,6 @@ public class World {
 
         everythingPanel.add(new JLabel(" "));
         everythingPanel.add(new JLabel(" "));
-        everythingPanel.add(new JLabel(" "));
-
         everythingPanel.add(new JLabel("Enemy Stats"));
 
         everythingPanel.add(new JLabel(" "));
@@ -81,6 +88,8 @@ public class World {
         JLabel eMaxAttackLabel = new JLabel("MaxAttack");
         enemyStatsPanel.add(eMaxAttackLabel);
         everythingPanel.add(enemyStatsPanel);
+
+        everythingPanel.add(new JLabel(" "));
 
         worldFrame.add(everythingPanel);
 
@@ -103,30 +112,73 @@ public class World {
             e1.setMaxAttackLabel(eMaxAttackLabel);
 
             e1.displayHealth();
+            System.out.println("Health: " + p1.battleHealth);
+            System.out.println("Health: " + e1.health);
 
-            while (!p1.isDead() && !e1.isDead()) {
+            ActionListener healthListener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        p1.upgradeHealth();
+                        enabled.set(false);
+                        upgradeHealthButton.setText("Upgrade health for " + p1.healthUpgradePrice);
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                    }
+                }
+            };
+            upgradeHealthButton.addActionListener(healthListener);
+
+            ActionListener minAttackListener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        p1.upgradeMinAttack();
+                        upgradeMinAttackButton.setText("Upgrade min attack for " + p1.minAttackUpgradePrice);
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                    }
+                }
+            };
+            upgradeMinAttackButton.addActionListener(minAttackListener);
+
+            ActionListener maxAttackListener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        p1.upgradeMaxAttack();
+                        upgradeMaxAttackButton.setText("Upgrade max attack for " + p1.maxAttackUpgradePrice);
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                    }
+                }
+            };
+            upgradeMaxAttackButton.addActionListener(maxAttackListener);
+
+            while (!p1.isDead() && !e1.isDead() && enabled.get()) {
                 e1.removeHealth(p1.attack());
+                if (!enabled.get()) {
+                    p1.reset();
+                    break;
+                }
+                System.out.println("Still running");
                 if (e1.isDead()) {
                     p1.addCoins(level.get());
                     p1.reset();
                     break;
                 }
                 p1.removeHealth(e1.attack());
+                if (!enabled.get()) {
+                    p1.reset();
+                    break;
+                }
+                System.out.println("Running");
                 if (p1.isDead()) {
                     p1.reset();
                     break;
                 }
             }
+            upgradeHealthButton.removeActionListener(healthListener);
+            upgradeHealthButton.removeActionListener(minAttackListener);
+            upgradeHealthButton.removeActionListener(maxAttackListener);
+            enabled.set(true);
         }
-        /*ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-            }
-        };
-
-        upgradeHealth.addActionListener(listener);
-        upgradeHealth.removeActionListener(listener);
-
-         */
     }
 }

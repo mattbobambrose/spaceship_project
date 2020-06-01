@@ -17,13 +17,13 @@ public class EnemySpaceship {
     public void removeHealth(int a) throws InterruptedException {
         health -= a;
         this.healthLabel.setText("Health: " + health);
-        Thread.sleep(1000);
+        Thread.sleep(250);
     }
 
     public void calcStats(int level) {
-        health = 10 + level ^ 2;
-        minAttack = level;
-        maxAttack = level * 3;
+        health = 10 + level * level * 2;
+        minAttack = level + (int) (level * 0.1) * 4;
+        maxAttack = (int) (level * 2.5) + (int) (level * 0.1) * 4;
     }
 
     public boolean isDead() {
@@ -37,7 +37,7 @@ public class EnemySpaceship {
         this.healthLabel.setText("Health: " + health);
         this.minAttackLabel.setText("    Min attack: " + minAttack);
         this.maxAttackLabel.setText("    Max attack: " + maxAttack);
-        Thread.sleep(1000);
+        Thread.sleep(250);
     }
 
     public void setHealthLabel(JLabel healthLabel) {
