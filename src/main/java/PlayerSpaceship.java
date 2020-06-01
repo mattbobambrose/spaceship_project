@@ -40,7 +40,7 @@ public class PlayerSpaceship {
         if (coins >= healthUpgradePrice) {
             coins -= healthUpgradePrice;
             healthUpgradePrice = healthUpgradePrice + (int) (healthUpgradePrice * 0.5);
-            health = health + (int) (health * 0.25);
+            health = health + (int) (health * 0.35);
             this.coinsLabel.setText("Coins: " + coins);
             Thread.sleep(100);
             this.healthLabel.setText("Health: " + battleHealth);
@@ -51,7 +51,7 @@ public class PlayerSpaceship {
     public void upgradeMinAttack() throws InterruptedException {
         if (minAttack < maxAttack && coins >= minAttackUpgradePrice) {
             coins -= minAttackUpgradePrice;
-            minAttackUpgradePrice = maxAttackUpgradePrice + (int) (maxAttackUpgradePrice * 0.35);
+            minAttackUpgradePrice = minAttackUpgradePrice + (int) (minAttackUpgradePrice * 0.3);
             minAttack += 1 + (int) (minAttack * 0.1);
             ;
             this.coinsLabel.setText("Coins: " + coins);
